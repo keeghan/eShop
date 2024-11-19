@@ -1,15 +1,18 @@
 package com.keeghan.eShop;
 
+import com.keeghan.eShop.domain.dtos.ProductDTO;
+import com.keeghan.eShop.domain.entities.Category;
 import com.keeghan.eShop.domain.entities.Product;
+import com.keeghan.eShop.domain.mappers.ProductMapperImpl;
 import com.keeghan.eShop.repositories.ProductRepository;
+import com.keeghan.eShop.service.CategoryService;
 import com.keeghan.eShop.service.ProductService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -28,48 +31,50 @@ public class ProductServiceTests {
     private ProductService productService;
 
     @Autowired
-    private ProductRepository productRepository;
+    private CategoryService categoryService;
+
+    @Autowired
+    private ProductMapperImpl productMapper;
 
     @Test
-    @Transactional
     public void testCreateProduct_Success() {
+        Category category = TestDataUtil.createTestCategoryA();
+        categoryService.createCategoryWithoutId(category);
+
         Product product = TestDataUtil.createTestProductA();
-        ResponseEntity<Product> response = productService.createProduct(product);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getName()).isEqualTo(product.getName());
+        ProductDTO productDTO = productMapper.mapToDto(product);
+        ProductDTO response = productMapper.mapToDto(productService.createProduct(product));
+
+        assertThat(response).isNotNull();
+        assertThat(response.getName()).isEqualTo(productDTO.getName());
+        assertThat(response.getProductId()).isEqualTo(productDTO.getProductId());
+        assertThat(response.getDescription()).isEqualTo(productDTO.getDescription());
+        assertThat(response.getStockQuantity()).isEqualTo(productDTO.getStockQuantity());
+        assertThat(response.getCategoryId()).isEqualTo(productDTO.getCategoryId());
     }
 
     @Test
     @Transactional
     public void testCreateProduct_NullProduct() {
-        ResponseEntity<Product> response = productService.createProduct(null);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @Test
-    @Transactional
-    public void testCreateProduct_InvalidPrice() {
-        Product product = TestDataUtil.createTestProductA();
-        product.setPrice(BigDecimal.ZERO);
-        ResponseEntity<Product> response = productService.createProduct(null);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> productService.createProduct(null));
     }
 
     @Test
     @Transactional
     public void testDeleteProduct_Success() {
         Product product = TestDataUtil.createTestProductA();
-        productRepository.save(product);
-        ResponseEntity<String> response = productService.deleteProduct(product.getProductId());
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(productRepository.existsById(product.getProductId())).isFalse();
+        productService.createProduct(product);
+        boolean response = productService.deleteProduct(product.getProductId());
+        assertThat(response).isEqualTo(true);
+        Product deletedProduct = productService.getProductById(product.getProductId());
+        assertThat(deletedProduct).isNull();
     }
 
     @Test
     @Transactional
     public void testDeleteProduct_NotFound() {
-        ResponseEntity<String> response = productService.deleteProduct(999L);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        Product product = TestDataUtil.createTestProductA();
+        boolean response = productService.deleteProduct(product.getProductId());
+        assertThat(response).isEqualTo(false);
     }
 }

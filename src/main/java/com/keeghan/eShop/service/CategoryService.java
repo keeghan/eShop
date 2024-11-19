@@ -36,6 +36,10 @@ public class CategoryService {
         return categoryRepository.save(newCategory);
     }
 
+    public Category createCategoryWithoutId(Category category) {
+        return categoryRepository.save(category);
+    }
+
     @Transactional
     public Category updateCategoryName(Long categoryId, String newName) {
         Category category = categoryRepository.findById(categoryId)
