@@ -4,7 +4,6 @@ import com.keeghan.eShop.domain.dtos.ProductDTO;
 import com.keeghan.eShop.domain.entities.Category;
 import com.keeghan.eShop.domain.entities.Product;
 import com.keeghan.eShop.domain.mappers.ProductMapperImpl;
-import com.keeghan.eShop.repositories.ProductRepository;
 import com.keeghan.eShop.service.CategoryService;
 import com.keeghan.eShop.service.ProductService;
 import jakarta.transaction.Transactional;
@@ -15,8 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;

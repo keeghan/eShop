@@ -2,8 +2,9 @@ package com.keeghan.eShop.repositories;
 
 import com.keeghan.eShop.domain.entities.CartItem;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CartItemRepository extends CrudRepository<CartItem, Long> {
+public interface CartItemRepository extends CrudRepository<CartItem, Long>, PagingAndSortingRepository<CartItem, Long> {
 }
